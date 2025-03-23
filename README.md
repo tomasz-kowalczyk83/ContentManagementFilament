@@ -7,6 +7,10 @@ basic setup for Region Subregion Country State and City including resources, rel
 
 filament CRUD setup
 
+Airports, airlines, ports and train stations locations seeded and linked to City records, 
+
+Filament CRUD including file uploads and geolocations
+
 Channel setup including CRUD and assigning locations, currencies and languages
 
 Multitenancy to create sales channels in different scopes
