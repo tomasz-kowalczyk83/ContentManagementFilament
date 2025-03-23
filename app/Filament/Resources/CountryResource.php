@@ -7,6 +7,8 @@ use App\Filament\Resources\CountryResource\Pages;
 use App\Filament\Resources\CountryResource\RelationManagers;
 use App\Models\Country;
 use Filament\Infolists;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Infolist;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,6 +18,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Nnjeim\World\Models\Currency;
 
 class CountryResource extends Resource
 {
@@ -56,23 +59,10 @@ class CountryResource extends Resource
             ]);
     }
 
-    public static function infolist(Infolist $infolist): Infolist
-    {
-        return $infolist
-            ->schema([
-                Infolists\Components\TextEntry::make('name'),
-                Infolists\Components\TextEntry::make('status'),
-                Infolists\Components\TextEntry::make('region'),
-                Infolists\Components\TextEntry::make('subregion'),
-                Infolists\Components\TextEntry::make('iso2'),
-                Infolists\Components\TextEntry::make('iso3'),
-                Infolists\Components\TextEntry::make('phone_code'),
-            ]);
-    }
-
     public static function table(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('currency'))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
@@ -84,6 +74,12 @@ class CountryResource extends Resource
                 Tables\Columns\TextColumn::make('iso2'),
                 Tables\Columns\TextColumn::make('iso3'),
                 Tables\Columns\TextColumn::make('phone_code'),
+//                Tables\Columns\TextColumn::make('timezones.name')
+//                    ->listWithLineBreaks(),
+                Tables\Columns\TextColumn::make('currency')
+                    ->formatStateUsing(function (Currency $state) {
+                        return sprintf('%s (%s)', $state->name, $state->code);
+                    }),
             ])
             ->filters([
                 SelectFilter::make('status')
@@ -108,9 +104,68 @@ class CountryResource extends Resource
             ]);
     }
 
+    public static function infolist(Infolist $infolist): Infolist
+    {
+        return $infolist
+            ->schema([
+                Infolists\Components\Section::make('')
+                    ->schema([
+                        Fieldset::make('Details')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('name'),
+                                Infolists\Components\TextEntry::make('status')
+                                    ->badge(),
+                                Infolists\Components\TextEntry::make('region'),
+                                Infolists\Components\TextEntry::make('subregion'),
+                                Infolists\Components\TextEntry::make('iso2'),
+                                Infolists\Components\TextEntry::make('iso3'),
+                                Infolists\Components\TextEntry::make('phone_code'),
+                            ]),
+                        Fieldset::make('Currency')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('currency.name')
+                                    ->label('name'),
+                                Infolists\Components\TextEntry::make('currency.symbol')
+                                    ->label('symbol'),
+                                Infolists\Components\TextEntry::make('currency.code')
+                                    ->label('code'),
+                            ])
+                            ->columns(3),
+                        Fieldset::make('Language')
+                            ->schema([
+                                Infolists\Components\TextEntry::make('language.name')
+                                    ->label('name'),
+                                Infolists\Components\TextEntry::make('language.name_native')
+                                    ->label('name_native'),
+                                Infolists\Components\TextEntry::make('language.code')
+                                    ->label('code'),
+                            ])
+                            ->columns(3),
+                        Fieldset::make('timezones')
+                            ->schema([
+                                RepeatableEntry::make('timezones')
+                                    ->hiddenLabel()
+                                    ->schema([
+                                        Infolists\Components\TextEntry::make('name')->hiddenLabel(),
+                                    ])
+                                    ->columnSpan(2)
+//                                    ->columns(2),
+                            ])
+//                            ->columnSpan(2)
+//                            ->contained(false)
+
+                    ])
+                    ->columns(2),
+
+            ]);
+    }
+
     public static function getRelations(): array
     {
         return [
+            RelationManagers\StatesRelationManager::class,
+            RelationManagers\CitiesRelationManager::class,
+            RelationManagers\TimezonesRelationManager::class
         ];
     }
 

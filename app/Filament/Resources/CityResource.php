@@ -12,6 +12,8 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Nnjeim\World\Models\Country;
+use Nnjeim\World\Models\State;
 
 class CityResource extends Resource
 {
@@ -29,12 +31,39 @@ class CityResource extends Resource
             ->schema([
                 Forms\Components\Select::make('country_id')
                     ->relationship('country', 'name')
+                    ->preload()
+                    ->optionsLimit(20)
+                    ->searchable()
+                    ->reactive()
+                    ->native(false)
+                    ->afterStateUpdated(fn (callable $set) => $set('state_id', null))
                     ->required(),
+
                 Forms\Components\Select::make('state_id')
                     ->relationship('state', 'name')
+                    ->options(function (callable $get) {
+//                        dump($get('country_id'));
+                        $countryId = $get('country_id');
+                        if (!$countryId) {
+                            return State::all()->pluck('name', 'id');
+                        }
+                        return State::where('country_id', $countryId)->pluck('name', 'id');
+                    })
+                    ->preload()
+                    ->afterStateUpdated(function (callable $set, $state) {
+                        if ($state) {
+                            $selectedState = State::find($state);
+                            $set('country_id', $selectedState->country_id);
+                        }
+                    })
+                    ->searchable()
+                    ->reactive()
+                    ->native(false)
                     ->required(),
+
                 Forms\Components\TextInput::make('name')
                     ->required(),
+
                 Forms\Components\TextInput::make('country_code')
                     ->required(),
             ]);

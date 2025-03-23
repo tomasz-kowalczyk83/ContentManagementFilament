@@ -48,10 +48,10 @@ class StateResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('country.name')
-                    ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->url(fn (State $record) => CountryResource::getUrl('view', [$record->country_id])),
                 Tables\Columns\TextColumn::make('country_code')
-                    ->searchable(),
+                    ->sortable(),
             ])
             ->filters([
                 SelectFilter::make('country')
