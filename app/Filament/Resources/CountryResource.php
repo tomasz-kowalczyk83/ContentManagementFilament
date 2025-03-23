@@ -5,13 +5,14 @@ namespace App\Filament\Resources;
 use App\Filament\Enums\FormStatesOptionsEnum;
 use App\Filament\Resources\CountryResource\Pages;
 use App\Filament\Resources\CountryResource\RelationManagers;
+use App\Models\Country;
 use Filament\Infolists;
 use Filament\Infolists\Infolist;
-use \Nnjeim\World\Models\Country;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -43,10 +44,13 @@ class CountryResource extends Resource
                     ->default(1)
                     ->required(),
                 Forms\Components\TextInput::make('iso2')
-                    ->required(),
+                    ->required()
+                    ->length(2),
                 Forms\Components\TextInput::make('iso3')
-                    ->required(),
+                    ->required()
+                    ->length(3),
                 Forms\Components\TextInput::make('phone_code')
+                    ->numeric()
                     ->tel()
                     ->required(),
             ]);
@@ -70,25 +74,28 @@ class CountryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('iso2')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('status')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('phone_code')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('iso3')
-                    ->searchable(),
+                Tables\Columns\ToggleColumn::make('status'),
                 Tables\Columns\TextColumn::make('region')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('subregion')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('iso2'),
+                Tables\Columns\TextColumn::make('iso3'),
+                Tables\Columns\TextColumn::make('phone_code'),
             ])
             ->filters([
-                //
-            ])
+                SelectFilter::make('status')
+                    ->options(FormStatesOptionsEnum::class),
+                SelectFilter::make('region')
+                    ->options(function () {
+                        return Country::distinct()
+                            ->pluck('region', 'region')
+                            ->filter()
+                            ->all();
+                    })
+            ], layout: Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
