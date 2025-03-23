@@ -42,7 +42,6 @@ class CityResource extends Resource
                 Forms\Components\Select::make('state_id')
                     ->relationship('state', 'name')
                     ->options(function (callable $get) {
-//                        dump($get('country_id'));
                         $countryId = $get('country_id');
                         if (!$countryId) {
                             return State::all()->pluck('name', 'id');
