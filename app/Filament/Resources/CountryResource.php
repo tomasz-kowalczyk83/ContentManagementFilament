@@ -89,6 +89,7 @@ class CountryResource extends Resource
                 SelectFilter::make('status')
                     ->options(FormStatesOptionsEnum::class),
                 SelectFilter::make('region')
+                    ->multiple()
                     ->options(function () {
                         return Country::distinct()
                             ->pluck('region', 'region')

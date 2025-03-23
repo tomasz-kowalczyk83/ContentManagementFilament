@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StateResource\Pages;
 use App\Filament\Resources\StateResource\RelationManagers;
+use App\Models\Country;
+use Filament\Tables\Filters\SelectFilter;
 use \Nnjeim\World\Models\State;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -29,6 +31,9 @@ class StateResource extends Resource
             ->schema([
                 Forms\Components\Select::make('country_id')
                     ->relationship('country', 'name')
+                    ->searchable()
+                    ->preload(false)
+                    ->native(false)
                     ->required(),
                 Forms\Components\TextInput::make('name')
                     ->required(),
@@ -40,17 +45,23 @@ class StateResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('country.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('country_code')
                     ->searchable(),
             ])
             ->filters([
-                //
-            ])
+                SelectFilter::make('country')
+                    ->relationship('country', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->native(false)
+                    ->multiple(),
+
+            ], layout: Tables\Enums\FiltersLayout::AboveContentCollapsible)
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
