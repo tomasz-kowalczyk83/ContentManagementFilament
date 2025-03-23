@@ -6,6 +6,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -28,7 +29,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => '#D67976',
+                'secondary' => '#D8C99B',
+                'custom' => '#6932f5',
+                'success' => Color::Emerald,
+                'warning' => '#BD632F',
+                'danger' => '#A4243B',
+                'gray' => '#273E47',
+                'info' => '#80ffea',
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -39,6 +47,17 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
                 Widgets\FilamentInfoWidget::class,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make()
+//                    ->icon('heroicon-o-globe-europe-africa')
+                    ->label('Locations'),
+                NavigationGroup::make()
+//                    ->icon('heroicon-o-globe-europe-africa')
+                    ->label('Locale'),
+                NavigationGroup::make()
+//                    ->icon('heroicon-o-globe-europe-africa')
+                    ->label('Travel')
             ])
             ->middleware([
                 EncryptCookies::class,
